@@ -7,37 +7,33 @@
 //
 
 // Add File Behavior to Path by extension
-extension  Path {
+extension Path {
     
-    public var ext:NSString {
-        return NSURL(fileURLWithPath:path_string).pathExtension!
+    public var ext: String {
+        return (path_string as NSString).pathExtension
     }
     
-    public func touch() -> Result<Path,NSError> {
+    public func touch() -> Path.Result<Path, NSError> {
         assert(!self.isDir,"Can NOT touch to dir")
         return self.exists
             ? self.updateModificationDate()
             : self.createEmptyFile()
     }
     
-    public func updateModificationDate(date: NSDate = NSDate() ) -> Result<Path,NSError>{
-        var error: NSError?
-        let result: Bool
+    public func updateModificationDate(_ date: Date = Date()) -> Path.Result<Path, NSError> {
+
         do {
             try fileManager.setAttributes(
-                        [NSFileModificationDate :date],
+                        [FileAttributeKey.modificationDate :date],
                         ofItemAtPath:path_string)
-            result = true
-        } catch let error1 as NSError {
-            error = error1
-            result = false
+            return Path.Result(success: self)
+        } catch let error as NSError {
+            return Path.Result(failure: error)
         }
-        return result
-            ? Result(success: self)
-            : Result(failure: error!)
+
     }
     
-    private func createEmptyFile() -> Result<Path,NSError>{
+    fileprivate func createEmptyFile() -> Path.Result<Path, NSError> {
         return self.writeString("")
     }
     
@@ -45,62 +41,47 @@ extension  Path {
     
     public func readString() -> String? {
         assert(!self.isDir,"Can NOT read data from  dir")
-        var readError:NSError?
-        let read: String?
+
         do {
-            read = try String(contentsOfFile: path_string,
-                                            encoding: NSUTF8StringEncoding)
+            let read = try String(contentsOfFile: path_string,
+                                            encoding: String.Encoding.utf8)
+            return read
         } catch let error as NSError {
-            readError = error
-            read = nil
-        }
-        
-        if let error = readError {
             print("readError< \(error.localizedDescription) >")
+            return nil
         }
         
-        return read
     }
     
-    public func writeString(string:String) -> Result<Path,NSError> {
+    public func writeString(_ string:String) -> Path.Result<Path, NSError> {
         assert(!self.isDir,"Can NOT write data from  dir")
-        var error: NSError?
-        let result: Bool
+
         do {
-            try string.writeToFile(path_string,
+            try string.write(toFile: path_string,
                         atomically:true,
-                        encoding: NSUTF8StringEncoding)
-            result = true
-        } catch let error1 as NSError {
-            error = error1
-            result = false
+                        encoding: String.Encoding.utf8)
+            return Path.Result(success: self)
+        } catch let error as NSError {
+            return Path.Result(failure: error)
         }
-        return result
-            ? Result(success: self)
-            : Result(failure: error!)
     }
     
     // MARK: - read/write NSData
     
-    public func readData() -> NSData? {
+    public func readData() -> Data? {
         assert(!self.isDir,"Can NOT read data from  dir")
-        return NSData(contentsOfFile: path_string)
+        return (try? Data(contentsOf: URL(fileURLWithPath: path_string)))
     }
     
-    public func writeData(data:NSData) -> Result<Path,NSError> {
+    public func writeData(_ data:Data) -> Path.Result<Path, NSError> {
         assert(!self.isDir,"Can NOT write data from  dir")
-        var error: NSError?
-        let result: Bool
+
         do {
-            try data.writeToFile(path_string, options:.DataWritingAtomic)
-            result = true
-        } catch let error1 as NSError {
-            error = error1
-            result = false
+            try data.write(to: URL(fileURLWithPath: path_string), options:.atomic)
+            return Path.Result(success: self)
+        } catch let error as NSError {
+            return Path.Result(failure: error)
         }
-        return result
-            ? Result(success: self)
-            : Result(failure: error!)
     }
     
 }
