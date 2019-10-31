@@ -10,104 +10,84 @@
 #if os(iOS)
 extension Path {
     
-    public class var homeDir :Path{
-        let pathString = NSHomeDirectory()
-        return Path( pathString )
+    public class var homeDir: Path {
+        return Path(NSHomeDirectory())
     }
     
-    public class var temporaryDir:Path {
-        let pathString = NSTemporaryDirectory()
-        return Path( pathString )
+    public class var temporaryDir: Path {
+        return Path(NSTemporaryDirectory())
     }
     
     public class var documentsDir:Path {
-        return Path.userDomainOf(.DocumentDirectory)
+        return Path.userDomainOf(.documentDirectory)
     }
     
     public class var cacheDir:Path {
-        return Path.userDomainOf(.CachesDirectory)
+        return Path.userDomainOf(.cachesDirectory)
     }
     
-    private class func userDomainOf(pathEnum:NSSearchPathDirectory)->Path{
-        let pathString = NSSearchPathForDirectoriesInDomains(pathEnum, .UserDomainMask, true)[0] 
-        return Path( pathString )
+    fileprivate class func userDomainOf(_ pathEnum: FileManager.SearchPathDirectory) -> Path {
+        let pathString = NSSearchPathForDirectoriesInDomains(pathEnum, .userDomainMask, true)[0] 
+        return Path(pathString)
     }
     
 }
 #endif
 
 // Add Dir Behavior to Path by extension
-extension Path: SequenceType {
+extension Path: Sequence {
     
-    public subscript(filename: String) -> Path{
+    public subscript(filename: String) -> Path {
         get { return self.content(filename) }
     }
 
-    public var children:Array<Path>? {
+    public var children: Array<Path>? {
         assert(self.isDir,"To get children, path must be dir< \(path_string) >")
         assert(self.exists,"Dir must be exists to get children.< \(path_string) >")
-        var loadError: NSError?
-        let contents: [AnyObject]?
+
         do {
-            contents = try self.fileManager.contentsOfDirectoryAtPath(path_string
-                        )
+            let contents = try self.fileManager.contentsOfDirectory(atPath: path_string)
+            return contents.map(content)
         } catch let error as NSError {
-            loadError = error
-            contents = nil
-        }
-        if let error = loadError {
             print("Error< \(error.localizedDescription) >")
+            return nil
         }
-        
-        return contents!.map({ [unowned self] content in
-            return self.content(content as! String)
-        })
-        
     }
     
-    public var contents:Array<Path>? {
+    public var contents: Array<Path>? {
         return self.children
     }
     
-    public func content(path_string:NSString) -> Path {
-        return Path(
-            NSURL(fileURLWithPath: self.path_string)
-                .URLByAppendingPathComponent( path_string as String )
-                .path!
-        )
+    public func content(_ path_string: String) -> Path {
+        let s = (self.path_string as NSString).appendingPathComponent(path_string)
+        return Path(s)
     }
     
-    public func child(path:NSString) -> Path {
+    public func child(_ path: String) -> Path {
         return self.content(path)
     }
     
-    public func mkdir() -> Result<Path,NSError> {
-        var error: NSError?
-        let result: Bool
+    public func mkdir() -> PathResult<Path, NSError> {
+
         do {
-            try fileManager.createDirectoryAtPath(path_string,
+            try fileManager.createDirectory(atPath: path_string,
                         withIntermediateDirectories:true,
                             attributes:nil)
-            result = true
-        } catch let error1 as NSError {
-            error = error1
-            result = false
+            return PathResult(success: self)
+        } catch let error as NSError {
+            return PathResult(failure: error)
         }
-        return result
-            ? Result(success: self)
-            : Result(failure: error!)
-        
     }
     
-    public func generate() -> AnyGenerator<Path> {
+    public func makeIterator() -> AnyIterator<Path> {
         assert(self.isDir,"To get iterator, path must be dir< \(path_string) >")
-        let iterator = fileManager.enumeratorAtPath(path_string)
-        return anyGenerator() {
-            let optionalContent = iterator?.nextObject() as! String?
+        let iterator = fileManager.enumerator(atPath: path_string)
+        return AnyIterator() {
+            let optionalContent = iterator?.nextObject() as? String
             if let content = optionalContent {
                 return self.content(content)
             } else {
-                return .None
+                return .none
             }
         }
     }
