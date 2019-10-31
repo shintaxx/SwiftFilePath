@@ -5,6 +5,7 @@
 //  Created by nori0620 on 2015/01/11.
 //  Copyright (c) 2015年 Norihiro Sakamoto. All rights reserved.
 //
+import Foundation
 extension Path {
 
 public enum Result<S, F> {

@@ -5,7 +5,7 @@
 //  Created by nori0620 on 2015/01/08.
 //  Copyright (c) 2015年 Norihiro Sakamoto. All rights reserved.
 //
-
+import Foundation
 open class Path {
     
     // MARK: - Class methods
