@@ -67,15 +67,15 @@ extension Path: Sequence {
         return self.content(path)
     }
     
-    public func mkdir() -> PathResult<Path, NSError> {
+    public func mkdir() -> Path.Result<Path, NSError> {
 
         do {
             try fileManager.createDirectory(atPath: path_string,
                         withIntermediateDirectories:true,
                             attributes:nil)
-            return PathResult(success: self)
+            return Path.Result(success: self)
         } catch let error as NSError {
-            return PathResult(failure: error)
+            return Path.Result(failure: error)
         }
     }
     

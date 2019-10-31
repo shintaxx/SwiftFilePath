@@ -7,33 +7,33 @@
 //
 
 // Add File Behavior to Path by extension
-extension  Path {
+extension Path {
     
     public var ext: String {
         return (path_string as NSString).pathExtension
     }
     
-    public func touch() -> PathResult<Path, NSError> {
+    public func touch() -> Path.Result<Path, NSError> {
         assert(!self.isDir,"Can NOT touch to dir")
         return self.exists
             ? self.updateModificationDate()
             : self.createEmptyFile()
     }
     
-    public func updateModificationDate(_ date: Date = Date()) -> PathResult<Path, NSError> {
+    public func updateModificationDate(_ date: Date = Date()) -> Path.Result<Path, NSError> {
 
         do {
             try fileManager.setAttributes(
                         [FileAttributeKey.modificationDate :date],
                         ofItemAtPath:path_string)
-            return PathResult(success: self)
+            return Path.Result(success: self)
         } catch let error as NSError {
-            return PathResult(failure: error)
+            return Path.Result(failure: error)
         }
 
     }
     
-    fileprivate func createEmptyFile() -> PathResult<Path, NSError> {
+    fileprivate func createEmptyFile() -> Path.Result<Path, NSError> {
         return self.writeString("")
     }
     
@@ -53,16 +53,16 @@ extension  Path {
         
     }
     
-    public func writeString(_ string:String) -> PathResult<Path, NSError> {
+    public func writeString(_ string:String) -> Path.Result<Path, NSError> {
         assert(!self.isDir,"Can NOT write data from  dir")
 
         do {
             try string.write(toFile: path_string,
                         atomically:true,
                         encoding: String.Encoding.utf8)
-            return PathResult(success: self)
+            return Path.Result(success: self)
         } catch let error as NSError {
-            return PathResult(failure: error)
+            return Path.Result(failure: error)
         }
     }
     
@@ -73,14 +73,14 @@ extension  Path {
         return (try? Data(contentsOf: URL(fileURLWithPath: path_string)))
     }
     
-    public func writeData(_ data:Data) -> PathResult<Path, NSError> {
+    public func writeData(_ data:Data) -> Path.Result<Path, NSError> {
         assert(!self.isDir,"Can NOT write data from  dir")
 
         do {
             try data.write(to: URL(fileURLWithPath: path_string), options:.atomic)
-            return PathResult(success: self)
+            return Path.Result(success: self)
         } catch let error as NSError {
-            return PathResult(failure: error)
+            return Path.Result(failure: error)
         }
     }
     

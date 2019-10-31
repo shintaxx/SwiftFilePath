@@ -388,7 +388,7 @@ class SwiftFilePathTests: XCTestCase {
     func testSuccessResult() {
         var callOnFailure = false
         var callOnSuccess = false
-        let result = PathResult<Int,String>(success:200)
+        let result = Path.Result<Int,String>(success:200)
             .onSuccess({ (value:Int) in
                 callOnSuccess = true
                 XCTAssertEqual(value,200)
@@ -407,7 +407,7 @@ class SwiftFilePathTests: XCTestCase {
     func testFailureResult() {
         var callOnFailure = false
         var callOnSuccess = false
-        let result = PathResult<Int,String>(failure:"NG!")
+        let result = Path.Result<Int,String>(failure:"NG!")
             .onSuccess({ (value:Int) in
                 callOnSuccess = true
             })
@@ -428,7 +428,7 @@ class SwiftFilePathTests: XCTestCase {
         locally { // On success.
             var callOnFailure = false
             var callOnSuccess = false
-            let result = PathResult<Int,String>(success:200);
+            let result = Path.Result<Int,String>(success:200);
             
             switch result {
                 case .success(let value):
@@ -445,7 +445,7 @@ class SwiftFilePathTests: XCTestCase {
         locally { // On Error.
             var callOnFailure = false
             var callOnSuccess = false
-            let result = PathResult<Int,String>(failure: "ERROR!!!");
+            let result = Path.Result<Int,String>(failure: "ERROR!!!");
             
             switch result {
                 case .success(let value):

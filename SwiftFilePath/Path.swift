@@ -64,42 +64,42 @@ open class Path {
     }
     
     @discardableResult
-    open func remove() -> PathResult<Path, NSError> {
+    open func remove() -> Path.Result<Path, NSError> {
         assert(self.exists,"To remove file, file MUST be exists")
 
         do {
             try fileManager.removeItem(atPath: path_string)
-            return PathResult(success: self)
+            return Path.Result(success: self)
         } catch let error as NSError {
-            return PathResult(failure: error)
+            return Path.Result(failure: error)
         }
 
     }
     
     @discardableResult
-    open func copyTo(_ toPath:Path) -> PathResult<Path, NSError> {
+    open func copyTo(_ toPath:Path) -> Path.Result<Path, NSError> {
         assert(self.exists,"To copy file, file MUST be exists")
 
         do {
             try fileManager.copyItem(atPath: path_string,
                         toPath: toPath.toString())
-            return PathResult(success: self)
+            return Path.Result(success: self)
         } catch let error as NSError {
-            return PathResult(failure: error)
+            return Path.Result(failure: error)
         }
 
     }
     
     @discardableResult
-    open func moveTo(_ toPath:Path) -> PathResult<Path, NSError> {
+    open func moveTo(_ toPath:Path) -> Path.Result<Path, NSError> {
         assert(self.exists,"To move file, file MUST be exists")
 
         do {
             try fileManager.moveItem(atPath: path_string,
                         toPath: toPath.toString())
-            return PathResult(success: self)
+            return Path.Result(success: self)
         } catch let error as NSError {
-            return PathResult(failure: error)
+            return Path.Result(failure: error)
         }
 
     }
